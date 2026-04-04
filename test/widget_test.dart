@@ -1,30 +1,79 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:bloop_assessment/main.dart';
+import 'package:bloop_assessment/models/collection_model.dart';
+import 'package:bloop_assessment/providers/collection_list_provider.dart';
+import 'package:bloop_assessment/services/collection_cache_service.dart';
+import 'package:bloop_assessment/services/collection_remote_service.dart';
+
+class _FakeCollectionRemoteService implements CollectionRemoteService {
+  @override
+  Future<List<CollectionModel>> fetchCollections() async {
+    return [
+      CollectionModel(
+        id: 'test-collection',
+        title: 'Test Collection',
+        description: 'Loaded from a fake service for widget testing.',
+        coverImageUrl: 'https://example.com/test.jpg',
+        creatorId: 'tester',
+        isPremium: false,
+        sectionCount: 2,
+        createdAt: DateTime.parse('2024-01-15T10:30:00Z'),
+      ),
+    ];
+  }
+}
+
+class _InMemoryCollectionCacheService extends CollectionCacheService {
+  _InMemoryCollectionCacheService() : super(boxName: 'test_collection_cache');
+
+  List<CollectionModel>? _data;
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<List<CollectionModel>?> getCollections(String key) async => _data;
+
+  @override
+  Future<void> saveCollections(
+    String key,
+    List<CollectionModel> collections,
+  ) async {
+    _data = collections;
+  }
+
+  @override
+  Future<void> clearAll() async {
+    _data = null;
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('renders collection list content', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionCacheServiceProvider.overrideWith(
+            (ref) => _InMemoryCollectionCacheService(),
+          ),
+          collectionRemoteServiceProvider.overrideWith(
+            (ref) => _FakeCollectionRemoteService(),
+          ),
+        ],
+        child: const MyApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Bloop Collections'), findsOneWidget);
+    expect(find.text('Test Collection'), findsOneWidget);
+    expect(
+      find.text('Loaded from a fake service for widget testing.'),
+      findsOneWidget,
+    );
   });
 }
