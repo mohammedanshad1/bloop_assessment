@@ -1,7 +1,8 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'ui/collection_list_screen.dart';
+import 'ui/splash_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -21,6 +22,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: seedColor,
           surface: const Color(0xFFFFFBF7),
+          secondary: const Color(0xFFD96F32),
+          tertiary: const Color(0xFF6F4E37),
         ),
         scaffoldBackgroundColor: const Color(0xFFFFF7F0),
         appBarTheme: const AppBarTheme(
@@ -30,19 +33,33 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
         textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF2F241F),
+          ),
           titleLarge: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Color(0xFF2F241F),
           ),
+          titleMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.5,
+          ),
           bodyMedium: TextStyle(
             height: 1.5,
             color: Color(0xFF5B4A42),
           ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            color: Color(0xFF8B7A72),
+          ),
         ),
         useMaterial3: true,
       ),
-      home: const CollectionListScreen(),
+      home: const SplashScreen(),
     );
   }
 }
